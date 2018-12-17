@@ -1,0 +1,20 @@
+server:
+  port: 8585
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    name: jinke
+    url: jdbc:mysql://10.30.30.25:3306/jinke?useUnicode=true&&useSSL=false&characterEncoding=utf-8
+    username: root
+    password: 123456
+
+
+  jackson:
+      time-zone: GMT+8
+      date-format: yyyy-MM-dd HH:mm:ss
+
+
+#mybatis配置
+mybatis:
+  #无配置文件注解版      实体类所在目录（bean）
+  type-aliases-package: com.sww.jinke.test.entity
