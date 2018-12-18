@@ -51,7 +51,7 @@ public class DoorCodeController {
         try {
             //OpenDoor openDoor1 = openDoorService.generateDoorCode(openDoor);
             String doorCode = getRandomCode();
-            logger.info("生成的通行码：", doorCode);
+            logger.info("生成的通行码：" + doorCode);
             result.setResult(doorCode);
         } catch (Exception e) {
             e.printStackTrace();

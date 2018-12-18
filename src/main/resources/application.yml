@@ -4,7 +4,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     name: jinke
-    url: jdbc:mysql://10.30.30.25:3306/jinke?useUnicode=true&&useSSL=false&characterEncoding=utf-8
+    url: jdbc:mysql://10.30.30.25:3306/sww?useUnicode=true&&useSSL=false&characterEncoding=utf-8
     username: root
     password: 123456
 
