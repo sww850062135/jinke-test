@@ -1,9 +1,9 @@
 package com.sww.jinke.test.mapper;
 
 import com.sww.jinke.test.entity.*;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
+
+import java.util.List;
 
 /**
  * @Author: Sun Weiwen
@@ -157,4 +157,59 @@ public interface JKToAJBMapper {
     @Insert("INSERT INTO house_correlations(id, jk_build_unit_id, jk_house_id, ajb_house_id, ajb_house_code)" +
             "VALUES(#{id}, #{jkbuildunitId}, #{jkhouseId}, #{ajbhosueId}, #{ajbhouseCode})")
     void addHouseCorrelations(House_correlations house_correlations);
+
+    /**
+     * 根据项目Id查询金科小区数据
+     * @param jkProjectId 项目名称
+     * @return List
+     */
+    @Select("SELECT * FROM jk_community WHERE project_id = #{projectId}")
+    @Results({
+            @Result(property = "projectId", column = "project_id"),
+            @Result(property = "projectName", column = "project_name"),
+            @Result(property = "provinceName", column = "province_name"),
+            @Result(property = "cityName", column = "city_name"),
+            @Result(property = "districtName", column = "district_name"),
+            @Result(property = "companyId", column = "company_id"),
+            @Result(property = "companyName", column = "company_name"),
+            @Result(property = "houseTotal", column = "house_total"),
+            @Result(property = "houseNum", column = "house_num"),
+            @Result(property = "syncTime", column = "sync_time"),
+            @Result(property = "syncStatus", column = "sync_status"),
+            @Result(property = "syncMsg", column = "sync_msg")
+    })
+    List<JKCommunityBase> getJKCommunityByJKProjectId(@Param("projectId") String jkProjectId);
+
+    /**
+     * 根据金科小区id和楼栋id查询楼栋数据
+     * @param jkProjectId
+     * @param jkBuildId
+     * @return
+     */
+    @Select("SELECT * FROM jk_building WHERE project_id = #{projectId} AND build_id = #{buildId}")
+    @Results({
+            @Result(property = "buildId", column = "build_id"),
+            @Result(property = "buildName", column = "build_name"),
+            @Result(property = "projectId", column = "project_id"),
+            @Result(property = "projectName", column = "project_name"),
+            @Result(property = "syncTime", column = "sync_time")
+    })
+    List<JKBuildingBase> getJKBuildingByJKBuildId(@Param("projectId") String jkProjectId, @Param("buildId") String jkBuildId);
+
+    /**
+     * 根据jkUnitId查询金科单元数据
+     * @param jkUnitId
+     * @return
+     */
+    @Select("SELECT * FROM jk_unit WHERE unit_id = #{unitId}")
+    @Results({
+            @Result(property = "unitId", column = "unit_id"),
+            @Result(property = "unitName", column = "unit_name"),
+            @Result(property = "buildId", column = "build_id"),
+            @Result(property = "buildName", column = "build_name"),
+            @Result(property = "projectId", column = "project_id"),
+            @Result(property = "projectName", column = "project_name"),
+            @Result(property = "syncTime", column = "sync_time")
+    })
+    List<JKUnitBase> getJKUnitByJKUnitId(@Param("unitId") String jkUnitId);
 }

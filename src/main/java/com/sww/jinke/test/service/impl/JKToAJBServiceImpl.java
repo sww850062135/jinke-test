@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: Sun Weiwen
@@ -36,7 +38,7 @@ public class JKToAJBServiceImpl implements JKToAJBService{
         ResultMapUtil result = new ResultMapUtil();
         List<AJBCommunity> communities = new ArrayList<>();
         Community_correlations community_correlations = new Community_correlations();
-        logger.info("所要映射的金科小区数据是: ",jkCommunityBaseList);
+        logger.info("所要映射的金科小区数据是: "+ jkCommunityBaseList);
         for (int i = 0; i< jkCommunityBaseList.size(); i++){
             AJBCommunity ajbCommunity = new AJBCommunity();
             JKCommunityBase jkCommunityBase = jkCommunityBaseList.get(i);
@@ -60,8 +62,8 @@ public class JKToAJBServiceImpl implements JKToAJBService{
 
         }
         result.put("data", communities);
-        logger.info("映射完成的安居宝小区数据: ",result.get("data"));
-        logger.info("message: ",result.get("message"));
+        logger.info("映射完成的安居宝小区数据: " + result.get("data"));
+        logger.info("message: " + result.get("message"));
         return result;
     }
 
@@ -74,7 +76,7 @@ public class JKToAJBServiceImpl implements JKToAJBService{
         ResultMapUtil result = new ResultMapUtil();
         List<AJBBuilding> ajbBuildings = new ArrayList<>();
         Building_correlations building_correlations = new Building_correlations();
-        logger.info("所要映射的金科楼栋数据是: ",jkBuildingBaseList);
+        logger.info("所要映射的金科楼栋数据是: " + jkBuildingBaseList);
             for (int i=0; i<jkBuildingBaseList.size(); i++) {
                 JKBuildingBase jkBuildingBase = jkBuildingBaseList.get(i);
                 AJBBuilding ajbBuilding = new AJBBuilding();
@@ -85,20 +87,30 @@ public class JKToAJBServiceImpl implements JKToAJBService{
                 if (count<1) {
                     //映射楼栋
                     mappedAJBBuilding(jkProjectId, ajbBuilding, i);
-                    ajbBuildings.add(ajbBuilding);
-                    //映射楼栋关联
-                    mappedBuilding_correlations(building_correlations,jkProjectId,ajbBuilding,jkBuildingId);
-                    //插入映射记录
-                    jkToAJBMapper.addAJBBuilding(ajbBuilding);
-                    jkToAJBMapper.addBuildingCorrelations(building_correlations);
-                    result.put("message", "完成映射!");
+                    String ajbCommunityId = ajbBuilding.getCommunityId();
+                    if (!StringUtil.isNullOrEmpty(ajbCommunityId)) {
+                        ajbBuildings.add(ajbBuilding);
+                        //映射楼栋关联
+                        mappedBuilding_correlations(building_correlations, jkProjectId, ajbBuilding, jkBuildingId);
+                        //插入映射记录
+                        jkToAJBMapper.addAJBBuilding(ajbBuilding);
+                        jkToAJBMapper.addBuildingCorrelations(building_correlations);
+                        result.put("message", "完成映射!");
+                        result.put("status", "success");
+                        result.put("data", ajbBuildings);
+                        logger.info("映射完成的安居宝楼栋数据: " + result.get("data"));
+                    }else {
+                        List<JKCommunityBase> jkCommunityBaseList = jkToAJBMapper.getJKCommunityByJKProjectId(jkProjectId);
+                        result.put("status", "error");
+                        result.put("message", "映射失败,该楼栋上的小区还未映射!");
+                        result.put("data", jkCommunityBaseList);
+                    }
                 } else {
                     result.put("message", "已存在映射关系,无须再映射!");
+                    result.put("status", "success");
                 }
             }
-        result.put("data", ajbBuildings);
-        logger.info("映射完成的安居宝楼栋数据: ",result.get("data"));
-        logger.info("message: ",result.get("message"));
+        logger.info("message: " + result.get("message"));
         return result;
     }
 
@@ -111,7 +123,7 @@ public class JKToAJBServiceImpl implements JKToAJBService{
         ResultMapUtil result = new ResultMapUtil();
         List<AJBUnit> ajbUnits = new ArrayList<>();
         Unit_correlations unit_correlations = new Unit_correlations();
-        logger.info("所要映射的金科单元数据是: ",jkUnitBaseList);
+        logger.info("所要映射的金科单元数据是: " + jkUnitBaseList);
             for (int i = 0; i < jkUnitBaseList.size(); i++) {
                 JKUnitBase jkUnitBase = jkUnitBaseList.get(i);
                 AJBUnit ajbUnit = new AJBUnit();
@@ -122,19 +134,33 @@ public class JKToAJBServiceImpl implements JKToAJBService{
                 if (count < 1) {
                     //映射单元
                     mappedAJBUnit(ajbUnit, jkUnitBase, jkBuildId, i);
-                    ajbUnits.add(ajbUnit);
-                    //映射单元关联
-                    mappedUnit_correlations(unit_correlations,jkUnitBase,jkUnitId,ajbUnit);
-                    jkToAJBMapper.addAJBUnit(ajbUnit);
-                    jkToAJBMapper.addUnitCorrelations(unit_correlations);
-                    result.put("message", "完成映射!");
+                    String ajbCommunityId = ajbUnit.getCommunityId();
+                    String ajbBuildingId = ajbUnit.getBuildingId();
+                    if ((!StringUtil.isNullOrEmpty(ajbCommunityId)) || (!StringUtil.isNullOrEmpty(ajbBuildingId))) {
+                        ajbUnits.add(ajbUnit);
+                        //映射单元关联
+                        mappedUnit_correlations(unit_correlations, jkUnitBase, jkUnitId, ajbUnit);
+                        jkToAJBMapper.addAJBUnit(ajbUnit);
+                        jkToAJBMapper.addUnitCorrelations(unit_correlations);
+                        result.put("message", "完成映射!");
+                        result.put("status", "success");
+                        result.put("data", ajbUnits);
+                        logger.info("映射完成的安居宝单元数据: " + result.get("data"));
+                    }else {
+                        String jkProjectId = jkUnitBase.getProjectId();
+                        List<JKCommunityBase> jkCommunityBaseList = jkToAJBMapper.getJKCommunityByJKProjectId(jkProjectId);
+                        List<JKBuildingBase> jkBuildingBaseList = jkToAJBMapper.getJKBuildingByJKBuildId(jkProjectId, jkBuildId);
+                        result.put("status", "error");
+                        result.put("message", "映射失败,该单元上的小区或楼栋还未映射!");
+                        result.put("data", jkCommunityBaseList);
+                        result.put("data1", jkBuildingBaseList);
+                    }
                 } else {
                     result.put("message", "已存在映射关系,无须再映射!");
+                    result.put("status", "success");
                 }
             }
-        result.put("data", ajbUnits);
-        logger.info("映射完成的安居宝单元数据: ",result.get("data"));
-        logger.info("message: ",result.get("message"));
+        logger.info("message: " + result.get("message"));
         return result;
     }
 
@@ -143,10 +169,11 @@ public class JKToAJBServiceImpl implements JKToAJBService{
      * @return
      */
     @Override
-    public ResultMapUtil mappedAJBHouse(String jkBuildId, List<JKHouseBase> jkHouseBaseList) {
+    public ResultMapUtil mappedAJBHouse(String jkUnitId, String jkBuildId, List<JKHouseBase> jkHouseBaseList) {
         ResultMapUtil result = new ResultMapUtil();
         List<AJBHouse> ajbHouses = new ArrayList<>();
         House_correlations house_correlations = new House_correlations();
+        logger.info("所要映射的金科房屋数据是: " + jkHouseBaseList);
         for (int i = 0; i < jkHouseBaseList.size(); i++) {
             JKHouseBase jkHouseBase = jkHouseBaseList.get(i);
             AJBHouse ajbHouse = new AJBHouse();
@@ -156,19 +183,36 @@ public class JKToAJBServiceImpl implements JKToAJBService{
             if (count < 1) {
                 //映射房屋
                 mappedAJBHouse(jkHouseBase, ajbHouse, jkBuildId, i);
-                //映射房屋关联实体
-                mappedHouse_correlations(house_correlations, jkHouseBase, ajbHouse);
-                ajbHouses.add(ajbHouse);
-                jkToAJBMapper.addAJBHouse(ajbHouse);
-                jkToAJBMapper.addHouseCorrelations(house_correlations);
-                result.put("message", "完成映射!");
+                String ajbCommunityId = ajbHouse.getCommunityId();
+                String ajbBuildingId = ajbHouse.getBuildingId();
+                String ajbUnitId = ajbHouse.getUnitId();
+                if ((!StringUtil.isNullOrEmpty(ajbCommunityId)) || (!StringUtil.isNullOrEmpty(ajbBuildingId)) || (!StringUtil.isNullOrEmpty(ajbUnitId))) {
+                    //映射房屋关联实体
+                    mappedHouse_correlations(house_correlations, jkHouseBase, ajbHouse);
+                    ajbHouses.add(ajbHouse);
+                    jkToAJBMapper.addAJBHouse(ajbHouse);
+                    jkToAJBMapper.addHouseCorrelations(house_correlations);
+                    result.put("status", "success");
+                    result.put("message", "完成映射!");
+                    result.put("data", ajbHouses);
+                    logger.info("映射完成的安居宝房屋数据: " + result.get("data"));
+                }else {
+                    String jkProjectId = jkHouseBase.getProjectId();
+                    List<JKCommunityBase> jkCommunityBaseList = jkToAJBMapper.getJKCommunityByJKProjectId(jkProjectId);
+                    List<JKBuildingBase> jkBuildingBaseList = jkToAJBMapper.getJKBuildingByJKBuildId(jkProjectId, jkBuildId);
+                    List<JKUnitBase> jkUnitBaseList = jkToAJBMapper.getJKUnitByJKUnitId(jkUnitId);
+                    result.put("status", "error");
+                    result.put("message", "映射失败,该房屋上的小区或楼栋或单元还未映射!");
+                    result.put("data", jkCommunityBaseList);
+                    result.put("data1", jkBuildingBaseList);
+                    result.put("data2", jkUnitBaseList);
+                }
             } else {
                 result.put("message", "已存在映射关系,无须再映射!");
+                result.put("status", "success");
             }
         }
-        result.put("data", ajbHouses);
-        logger.info("映射完成的安居宝房屋数据: ",result.get("data"));
-        logger.info("message: ",result.get("message"));
+        logger.info("message: " + result.get("message"));
         return result;
     }
 
@@ -200,52 +244,59 @@ public class JKToAJBServiceImpl implements JKToAJBService{
         String jkCommunityId = jkHouseBase.getProjectId();
         String ajbCommunityId = jkToAJBMapper.getAJBCommunityId(jkCommunityId);
         String ajbBuildingId = jkToAJBMapper.getAJBBuildingId(jkBuildId);
-        String jkUnitId = jkHouseBase.getUnitId();
-        int count1 = jkToAJBMapper.getUnitCountByJKBuildId(jkBuildId);
-        String ajbUnitCode;
-        String ajbUnitId;
-        if (!jkUnitId.isEmpty()) {
-            //若金科房屋表中unit_id不为空
-            ajbUnitId = jkToAJBMapper.getAJBUnitId(jkUnitId);
-
-            ajbUnitCode = jkToAJBMapper.getAJBUnitCode(ajbUnitId);
-        }else {
-            //如果金科房屋表中unit_id为空,则根据 build_id来查找该楼栋下最大的单元数, 新的单元编码在该最大单元数下加1
-            ajbUnitId = StringUtil.UUID();
-            String ajbBuildingCode = jkToAJBMapper.getAJBBuildingCode(ajbBuildingId);
-            if (ajbBuildingCode.length()<3 && count1<10) {
-                ajbUnitCode = ajbBuildingCode + "0" + String.valueOf(count1+1);
-            }else {
-                ajbUnitCode = ajbBuildingCode + String.valueOf(count1+1);
+        if ((!StringUtil.isNullOrEmpty(ajbCommunityId)) && (!StringUtil.isNullOrEmpty(ajbBuildingId))) {
+            String jkUnitId1 = jkHouseBase.getUnitId();
+            int count1 = jkToAJBMapper.getUnitCountByJKBuildId(jkBuildId);
+            String ajbUnitCode;
+            String ajbUnitId;
+            if (!jkUnitId1.isEmpty()) {
+                //若金科房屋表中unit_id不为空
+                ajbUnitId = jkToAJBMapper.getAJBUnitId(jkUnitId1);
+                if (!StringUtil.isNullOrEmpty(ajbUnitId)) {
+                    ajbUnitCode = jkToAJBMapper.getAJBUnitCode(ajbUnitId);
+                }else {
+                    return ajbHouse;
+                }
+            } else {
+                //如果金科房屋表中unit_id为空,则根据 build_id来查找该楼栋下最大的单元数, 新的单元编码在该最大单元数下加1
+                ajbUnitId = StringUtil.UUID();
+                String ajbBuildingCode = jkToAJBMapper.getAJBBuildingCode(ajbBuildingId);
+                if (ajbBuildingCode.length() < 3 && count1 < 10) {
+                    ajbUnitCode = ajbBuildingCode + "0" + String.valueOf(count1 + 1);
+                } else {
+                    ajbUnitCode = ajbBuildingCode + String.valueOf(count1 + 1);
+                }
             }
+            ajbHouse.setId(StringUtil.UUID());
+            ajbHouse.setCommunityId(ajbCommunityId);
+            ajbHouse.setBuildingId(ajbBuildingId);
+            ajbHouse.setUnitId(ajbUnitId);
+            String ajbHouseCode;
+            if (i < 9) {
+                String code = "000" + String.valueOf(i + 1);
+                ajbHouseCode = ajbUnitCode + code;
+            } else if (i < 99) {
+                String code = "00" + String.valueOf(i + 1);
+                ajbHouseCode = ajbUnitCode + code;
+            } else if (i < 999) {
+                String code = "0" + String.valueOf(i + 1);
+                ajbHouseCode = ajbUnitCode + code;
+            } else {
+                String code = String.valueOf(i + 1);
+                ajbHouseCode = ajbUnitCode + code;
+            }
+            ajbHouse.setHouseCode(ajbHouseCode);
+            ajbHouse.setHouseName(ajbHouseCode + "房屋");
+            if (i / 2 == 0) {
+                ajbHouse.setFloor(2);
+            } else {
+                ajbHouse.setFloor(1);
+            }
+            ajbHouse.setCreatedTime(DateUtils.getCurrentDateTime());
+            return ajbHouse;
+        }else {
+            return ajbHouse;
         }
-        ajbHouse.setId(StringUtil.UUID());
-        ajbHouse.setCommunityId(ajbCommunityId);
-        ajbHouse.setBuildingId(ajbBuildingId);
-        ajbHouse.setUnitId(ajbUnitId);
-        String ajbHouseCode;
-        if (i < 9) {
-            String code = "000" + String.valueOf(i + 1);
-            ajbHouseCode = ajbUnitCode + code;
-        } else if (i  < 99) {
-            String code = "00" + String.valueOf(i + 1);
-            ajbHouseCode = ajbUnitCode + code;
-        } else if (i  < 999) {
-            String code = "0" + String.valueOf(i + 1);
-            ajbHouseCode = ajbUnitCode + code;
-        } else {
-            String code = String.valueOf(i + 1);
-            ajbHouseCode = ajbUnitCode + code;
-        }
-        ajbHouse.setHouseCode(ajbHouseCode);
-        ajbHouse.setHouseName(ajbHouseCode + "房屋");
-        if (i / 2 == 0) {
-            ajbHouse.setFloor(2);
-        } else {
-            ajbHouse.setFloor(1);
-        }
-        ajbHouse.setCreatedTime(DateUtils.getCurrentDateTime());
-        return ajbHouse;
     }
 
     /**
@@ -278,24 +329,28 @@ public class JKToAJBServiceImpl implements JKToAJBService{
         String ajbBuildingId = jkToAJBMapper.getAJBBuildingId(jkBuildId);
         String ajbCommunityId = jkToAJBMapper.getAJBCommunityId(jkCommunityId);
         String ajbBuildingCode = jkToAJBMapper.getAJBBuildingCode(ajbBuildingId);
-        //映射单元
-        ajbUnit.setId(StringUtil.UUID());
-        ajbUnit.setCommunityId(ajbCommunityId);
-        ajbUnit.setBuildingId(ajbBuildingId);
-        String ajbUnitCode;
-        String unitNo;
-        //4位unit_code 由building_code和单元号unitNo拼接而成
-        if (ajbBuildingCode.length() < 3 && i < 9) {
-            unitNo = "0" + String.valueOf(i + 1);
-            ajbUnitCode = ajbBuildingCode + unitNo;
-        } else {
-            unitNo = String.valueOf(i + 1);
-            ajbUnitCode = ajbBuildingCode + unitNo;
+        if (! StringUtil.isNullOrEmpty(ajbBuildingId)) {
+            //映射单元
+            ajbUnit.setId(StringUtil.UUID());
+            ajbUnit.setCommunityId(ajbCommunityId);
+            ajbUnit.setBuildingId(ajbBuildingId);
+            String ajbUnitCode;
+            String unitNo;
+            //4位unit_code 由building_code和单元号unitNo拼接而成
+            if (ajbBuildingCode.length() < 3 && i < 9) {
+                unitNo = "0" + String.valueOf(i + 1);
+                ajbUnitCode = ajbBuildingCode + unitNo;
+            } else {
+                unitNo = String.valueOf(i + 1);
+                ajbUnitCode = ajbBuildingCode + unitNo;
+            }
+            ajbUnit.setUnitCode(ajbUnitCode);
+            ajbUnit.setUnitName(ajbBuildingCode + "楼" + unitNo + "单元");
+            ajbUnit.setCreatedTime(DateUtils.getCurrentDateTime());
+            return ajbUnit;
+        }else {
+            return ajbUnit;
         }
-        ajbUnit.setUnitCode(ajbUnitCode);
-        ajbUnit.setUnitName(ajbBuildingCode + "楼" + unitNo + "单元");
-        ajbUnit.setCreatedTime(DateUtils.getCurrentDateTime());
-        return ajbUnit;
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.sww.jinke.test.util;
 
 import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @Author: Sun Weiwen
  * @Description:
@@ -18,7 +20,10 @@ public class ResultMapUtil extends HashMap<String, Object>{
         this.put("code", code);
         return this;
     }
-
+    public ResultMapUtil status(String status) {
+        this.put("status", status);
+        return this;
+    }
     public ResultMapUtil message(String message){
         this.put("message", message);
         return this;
@@ -26,6 +31,14 @@ public class ResultMapUtil extends HashMap<String, Object>{
 
     public ResultMapUtil data(Object object){
         this.put("data", object);
+        return this;
+    }
+    public ResultMapUtil data1(Object object){
+        this.put("data1", object);
+        return this;
+    }
+    public ResultMapUtil data2(Object object){
+        this.put("data2", object);
         return this;
     }
 

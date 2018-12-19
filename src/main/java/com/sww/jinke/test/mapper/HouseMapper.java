@@ -80,11 +80,10 @@ public interface HouseMapper {
      * @param unitId
      * @return
      */
-    @Select("SELECT * FROM jk_house WHERE build_id = #{buildId} AND unit_id = #{unitId}")
+    @Select("SELECT * FROM jk_house WHERE build_id = #{buildId} OR unit_id = #{unitId}")
     @Results({
             @Result(property = "houseId", column = "house_id"),
             @Result(property = "houseName", column = "house_name"),
-            @Result(property = "houseNo", column = "house_no"),
             @Result(property = "houseType", column = "house_type"),
             @Result(property = "unitId", column = "unit_id"),
             @Result(property = "unitName", column = "unit_name"),
@@ -93,7 +92,8 @@ public interface HouseMapper {
             @Result(property = "projectId", column = "project_id"),
             @Result(property = "projectName", column = "project_name"),
             @Result(property = "projectType", column = "project_type"),
-            @Result(property = "corp", column = "corp")
+            @Result(property = "companyName", column = "company_name"),
+            @Result(property = "syncTime", column = "sync_time")
     })
     List<JKHouseBase> getJKHouseListByBuildIdAndUnitId(@Param("buildId") String buildId, @Param("unitId") String unitId);
 
@@ -106,7 +106,6 @@ public interface HouseMapper {
     @Results({
             @Result(property = "houseId", column = "house_id"),
             @Result(property = "houseName", column = "house_name"),
-            @Result(property = "houseNo", column = "house_no"),
             @Result(property = "houseType", column = "house_type"),
             @Result(property = "unitId", column = "unit_id"),
             @Result(property = "unitName", column = "unit_name"),
@@ -115,7 +114,8 @@ public interface HouseMapper {
             @Result(property = "projectId", column = "project_id"),
             @Result(property = "projectName", column = "project_name"),
             @Result(property = "projectType", column = "project_type"),
-            @Result(property = "corp", column = "corp")
+            @Result(property = "companyName", column = "company_name"),
+            @Result(property = "syncTime", column = "sync_time"),
     })
     List<JKHouseBase> getJKHouseByHouseId(@Param("houseId") String houseId);
 

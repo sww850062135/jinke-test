@@ -21,5 +21,5 @@ public interface JKToAJBService {
 
     ResultMapUtil mappedAJBUnit(String jkBuildId, List<JKUnitBase> jkUnitBaseList);  //将金科单元数据映射成安居宝单元数据
 
-    ResultMapUtil mappedAJBHouse(String jkBuildId, List<JKHouseBase> jkHouseBaseList); //将金科房屋映射成安居宝房屋
+    ResultMapUtil mappedAJBHouse(String jkUnitId, String jkBuildId, List<JKHouseBase> jkHouseBaseList); //将金科房屋映射成安居宝房屋
 }

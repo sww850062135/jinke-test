@@ -14,8 +14,11 @@ import java.util.Map;
 @Getter
 public class JsonResult {
     private String status;
+    private Object status1;
     private String msg;
     private Object msg1;
     private Object result;
+    private Object result1;
+    private Object result2;
     private Map resultMap;
 }

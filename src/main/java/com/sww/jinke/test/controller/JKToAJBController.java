@@ -6,6 +6,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.sww.jinke.test.entity.*;
 import com.sww.jinke.test.service.JKToAJBService;
 import com.sww.jinke.test.util.ResultMapUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/ajb")
 public class JKToAJBController {
+    private static final Logger logger = LoggerFactory.getLogger(JKToAJBController.class);
 
     @Autowired
     private JKToAJBService jkToAJBService;
@@ -34,7 +37,7 @@ public class JKToAJBController {
     public ResponseEntity<JsonResult> mappedAJBCommunityList(@RequestBody HashMap map) {
         JsonResult result = new JsonResult();
         try {
-            System.out.println(map.toString());
+            //System.out.println(map.toString());
             JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(map));
             //System.out.println(jsonObject.toJSONString());
             JSONObject jsonObject1 = (JSONObject) jsonObject.get("params");
@@ -64,7 +67,7 @@ public class JKToAJBController {
     public ResponseEntity<JsonResult> mappedAJBBuilding(@RequestBody HashMap map) {
         JsonResult result = new JsonResult();
         try {
-            System.out.println(map.toString());
+            //System.out.println(map.toString());
             JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(map));
             //System.out.println(jsonObject.toJSONString());
             JSONObject jsonObject1 = (JSONObject) jsonObject.get("params");
@@ -74,6 +77,7 @@ public class JKToAJBController {
             List<JKBuildingBase> jkBuildingBaseList;
             jkBuildingBaseList = JSONArray.parseArray(jsonArray.toJSONString(), JKBuildingBase.class);
             ResultMapUtil resultMapUtil = jkToAJBService.mappedAJBBuilding(jkProjectId, jkBuildingBaseList);
+            result.setStatus1(resultMapUtil.get("status"));
             result.setStatus("success");
             result.setMsg1(resultMapUtil.get("message"));
             result.setResult(resultMapUtil.get("data"));
@@ -95,7 +99,7 @@ public class JKToAJBController {
     public ResponseEntity<JsonResult> mappedAJBUnit(@RequestBody HashMap map) {
         JsonResult result = new JsonResult();
         try {
-            System.out.println(map.toString());
+            //System.out.println(map.toString());
             JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(map));
             //System.out.println(jsonObject.toJSONString());
             JSONObject jsonObject1 = (JSONObject) jsonObject.get("params");
@@ -105,16 +109,27 @@ public class JKToAJBController {
             List<JKUnitBase> jkUnitBaseList;
             jkUnitBaseList = JSONArray.parseArray(jsonArray.toJSONString(), JKUnitBase.class);
             ResultMapUtil resultMapUtil = jkToAJBService.mappedAJBUnit(jkBuildId, jkUnitBaseList);
-            result.setStatus("success");
-            result.setMsg1(resultMapUtil.get("message"));
-            result.setResult(resultMapUtil.get("data"));
+            if (resultMapUtil.get("status") == "success") {
+                result.setStatus1("success");
+                result.setStatus("success");
+                result.setMsg1(resultMapUtil.get("message"));
+                result.setResult(resultMapUtil.get("data"));
+            }else {
+                result.setStatus1("error");
+                result.setStatus("success");
+                result.setMsg1(resultMapUtil.get("message"));
+                //返回需要映射的金科小区
+                result.setResult(resultMapUtil.get("data"));
+                //返回需要映射的金科楼栋
+                result.setResult1(resultMapUtil.get("data1"));
+            }
         }catch (Exception e) {
             result.setResult(e.getClass().getName() + ":" + e.getMessage());
             result.setStatus("error");
             result.setMsg("请求错误!");
             e.printStackTrace();
         }
-        return ResponseEntity.ok(result);
+            return ResponseEntity.ok(result);
     }
 
     /**
@@ -132,13 +147,27 @@ public class JKToAJBController {
             JSONObject jsonObject1 = (JSONObject) jsonObject.get("params");
             JSONArray jsonArray = JSONObject.parseArray(jsonObject1.get("jkHouseBaseList").toString());
             String jkBuildId = (String) jsonObject1.get("buildId");
+            String jkUnitId = (String) jsonObject1.get("unitId");
             //System.out.println(jsonArray.toString());
             List<JKHouseBase> jkHouseBaseList;
             jkHouseBaseList = JSONArray.parseArray(jsonArray.toJSONString(), JKHouseBase.class);
-            ResultMapUtil resultMapUtil = jkToAJBService.mappedAJBHouse(jkBuildId, jkHouseBaseList);
-            result.setStatus("success");
-            result.setMsg1(resultMapUtil.get("message"));
-            result.setResult(resultMapUtil.get("data"));
+            ResultMapUtil resultMapUtil = jkToAJBService.mappedAJBHouse(jkUnitId, jkBuildId, jkHouseBaseList);
+            if (resultMapUtil.get("status") == "success") {
+                result.setStatus1("success");
+                result.setStatus("success");
+                result.setMsg1(resultMapUtil.get("message"));
+                result.setResult(resultMapUtil.get("data"));
+            }else {
+                result.setStatus1("error");
+                result.setStatus("success");
+                result.setMsg1(resultMapUtil.get("message"));
+                //返回需要映射的金科小区
+                result.setResult(resultMapUtil.get("data"));
+                //返回需要映射的金科楼栋
+                result.setResult1(resultMapUtil.get("data1"));
+                //返回需要映射的金科单元
+                result.setResult2(resultMapUtil.get("data2"));
+            }
         }catch (Exception e) {
             result.setResult(e.getClass().getName() + ":" + e.getMessage());
             result.setStatus("error");
